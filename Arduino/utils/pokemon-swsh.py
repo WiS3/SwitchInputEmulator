@@ -9,7 +9,7 @@ import math
 
 parser = argparse.ArgumentParser('Client for sending Pokemon Sword/Shield command macros to a controller emulator')
 parser.add_argument('port', help='Serial port of connected controller emulator. On a mac, check About This Mac > System Report')
-parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'next_den_day', 'release_box', 'force_sync'])
+parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'next_den_day', 'release_box', 'skip_day', 'force_sync'])
 args = parser.parse_args()
 
 STATE_OUT_OF_SYNC   = 0
@@ -442,43 +442,8 @@ Assumptions:
     # Invite Others
     tap_cmd(BTN_A, 4)
 
-    # Home screen
-    tap_cmd(BTN_HOME, 1)
-    # Bottom row buttons
-    tap_cmd(DPAD_D, 0.2)
-    # Over to System Settings
-    for i in range(4):
-        tap_cmd(DPAD_R, 0.2)
-    # Open Sytem Settings
-    tap_cmd(BTN_A, 0.5)
-    # To Sytem Settings > System
-    for i in range(14):
-        tap_cmd(DPAD_D, 0.3)
-    # Into Sytem Settings > System
-    tap_cmd(BTN_A, 0.5)
-    # To System > Date and Time
-    for i in range(4):
-        tap_cmd(DPAD_D, 0.2)
-    # Into System > Date and Time
-    tap_cmd(BTN_A, 0.5)
-    # To System > Date and Time > Date and Time
-    for i in range(2):
-        tap_cmd(DPAD_D, 0.2)
-    # Into System > Date and Time > Date and Time control
-    tap_cmd(BTN_A, 1.0)
-    # To Year control
-    for i in range(2):
-        tap_cmd(DPAD_R, 0.2)
-    # Increase Year (caps at 2060, do something to reset by then)
-    tap_cmd(DPAD_U, 0.2)
-    # Accept new Year
-    for i in range(5):
-        tap_cmd(BTN_A, 0.2)
-    p_wait(1.0)
-    # Home screen
-    tap_cmd(BTN_HOME, 1)
-    # Re-launch Pokemon
-    tap_cmd(BTN_A, 1.5)
+    # Skip the current day
+    skip_day()
 
     # Quit Invite Others
     tap_cmd(BTN_B, 2)
@@ -527,6 +492,18 @@ Assumptions:
         # Done with the row, move down to the next one unless this is the last row
         if 4 != row:
             tap_cmd(DPAD_D, 0.1)
+
+def macro_skip_day():
+    print('''
+Assumptions:
+ * Nintendo Online VS ranked battle glitch active
+''')
+    # Flush controller
+    send_cmd()
+    p_wait(0.5)
+
+    # Skip the current day
+    skip_day()
 
 def teleport_to_current_location():
     print("teleport_to_current_location")
@@ -613,6 +590,50 @@ def mashA (num):
         send_cmd(BTN_A) ; time.sleep(0.1) ;  send_cmd();  time.sleep(0.5)
     return True
 
+def skip_day():
+    print("skip_day")
+
+    # Home screen
+    tap_cmd(BTN_HOME, 1)
+    # Bottom row buttons
+    tap_cmd(DPAD_D, 0.2)
+    # Over to System Settings
+    for i in range(4):
+        tap_cmd(DPAD_R, 0.2)
+    # Open Sytem Settings
+    tap_cmd(BTN_A, 0.5)
+    # To Sytem Settings > System
+    send_cmd(DPAD_D)
+    p_wait(2.0)
+    send_cmd()
+    p_wait(0.1)
+    # Into Sytem Settings > System
+    tap_cmd(BTN_A, 0.5)
+    # To System > Date and Time
+    for i in range(4):
+        tap_cmd(DPAD_D, 0.1)
+    # Into System > Date and Time
+    tap_cmd(BTN_A, 0.5)
+    # To System > Date and Time > Date and Time
+    for i in range(2):
+        tap_cmd(DPAD_D, 0.1)
+    # Into System > Date and Time > Date and Time control
+    tap_cmd(BTN_A, 0.5)
+    # To Year control
+    for i in range(2):
+        tap_cmd(DPAD_R, 0.1)
+    # Increase Year (caps at 2060, do something to reset by then)
+    tap_cmd(DPAD_U, 0.1)
+    # Accept new Year
+    for i in range(5):
+        tap_cmd(BTN_A, 0.1)
+    p_wait(0.5)
+    # Home screen
+    tap_cmd(BTN_HOME, 0.5)
+    # Re-launch Pokemon
+    tap_cmd(BTN_A, 1.0)
+
+
 # -------------------------------------------------------------------------
 if __name__ == "__main__":
     ser = serial.Serial(port=args.port, baudrate=19200,timeout=1)
@@ -639,7 +660,8 @@ if __name__ == "__main__":
             'breed_for_shiny': macro_breed_for_shiny,
             'force_sync': force_sync,
             'next_den_day': macro_next_den_day,
-            'release_box': macro_release_box
+            'release_box': macro_release_box,
+            'skip_day': macro_skip_day
         }
         arg_macro_function = arg_macro_functions.get(args.macro)
         arg_macro_function()
