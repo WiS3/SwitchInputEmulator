@@ -628,7 +628,7 @@ def mashA (num):
         send_cmd(BTN_A) ; time.sleep(0.1) ;  send_cmd();  time.sleep(0.5)
     return True
 
-def skip_day():
+def skip_day(forward=True):
     print("skip_day")
 
     # Home screen
@@ -660,8 +660,16 @@ def skip_day():
     # To Year control
     for i in range(2):
         tap_cmd(DPAD_R, 0.1)
-    # Increase Year (caps at 2060, do something to reset by then)
-    tap_cmd(DPAD_U, 0.1)
+    # Move year forward or revert back to 2000 (the lowest)
+    if forward:
+        # Increase Year (caps at 2060, do something to reset by then)
+        tap_cmd(DPAD_U, 0.1)
+    else:
+        # Decrease year back (lower cap is 2000)
+        send_cmd(DPAD_D)
+        p_wait(5)
+        send_cmd()
+        p_wait(0.05)
     # Accept new Year
     for i in range(5):
         tap_cmd(BTN_A, 0.1)
