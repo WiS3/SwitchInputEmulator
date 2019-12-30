@@ -405,36 +405,25 @@ def sync():
     return inSync
 # ------------------------ Pokemon Sword & Shield -------------------------
 def macro_breed_for_shiny ():
+    print('Assumptions:\n * Near wild area breeder\n * Egg ready at breeder\n * Option Send to Boxes set to Manual\n * Text speed set to Fast\n * Party full, with egg speed booster in position 1')
     macro_counter = 0
+    box_spaces = 192
     print ("in macro_breed_for_shiny")
-#    while True: 
-#        circles(10)
-    while True: 
-#        teleport()
-        #gotoEmptyArea() 
-        #circles(10)
+    for i in range(box_spaces):
         time.sleep(.4)
         print("Loop #{}".format(macro_counter))
-        teleport()
+        teleport_to_current_location()
         gotoBreader()
         getEggFromBreader()
-        teleport()  
-        gotoEmptyArea() 
-        # circles(43)
-        # mashA(40)
-        bike_loop_mashing_a(81)
+        teleport_to_current_location()
+        gotoEmptyArea()
+        bike_loop_mashing_a(90)
         macro_counter = macro_counter + 1
+    send_cmd() ; p_wait(0.1)
 
-    send_cmd(LSTICK_CENTER) ; p_wait(0.1)
 
-
-def macro2_thread ():
-    teleport()
-    gotoBreader()
-    send_cmd(LSTICK_CENTER) ; p_wait(0.1)
-
-def teleport():
-    print("teleport")
+def teleport_to_current_location():
+    print("teleport_to_current_location")
     time.sleep(0.5)
     #Bring up menu
     send_cmd(BTN_X) ; time.sleep(0.1) ;  send_cmd(); time.sleep(0.8)
@@ -494,27 +483,18 @@ def getEggFromBreader():
     send_cmd(BTN_A) ; time.sleep(0.1) ;  send_cmd();  time.sleep(0.3)
     return True
 
-def circles(num):
-    animation_time = 0.2
-    for i in range(num):
-        print ("Circle #{}".format(i))
-        send_cmd(LSTICK_R) ; time.sleep(0.2 + animation_time) ;   time.sleep(0.1)  ;       send_cmd(LSTICK_CENTER) ; time.sleep(0.1)  
-        send_cmd(LSTICK_D) ; time.sleep(0 + animation_time) ;  time.sleep(0.1)  ;       send_cmd(LSTICK_CENTER) ; time.sleep(0.1)  
-        send_cmd(LSTICK_L) ; time.sleep(0.2 + animation_time); time.sleep(0.1)  ;       send_cmd(LSTICK_CENTER) ; time.sleep(0.1)  
-        send_cmd(LSTICK_U) ; time.sleep(0 + animation_time) ;   time.sleep(0.1)  ;       send_cmd(LSTICK_CENTER) ; time.sleep(0.1)   
-    return True
-
 def bike_loop_mashing_a(seconds):
+    print("bike_loop_mashing_a")
     total_seconds = 0
 
     # Loop on the bike, tapping A every second
     while total_seconds < seconds:
-        print ("Bike loop second #{}".format(total_seconds))
         send_cmd(LSTICK_R + RSTICK_L)
         p_wait(0.9)
         send_cmd(LSTICK_R + RSTICK_L + BTN_A)
         p_wait(0.1)
         total_seconds = total_seconds+1
+    print ("Bike loop seconds: #{}".format(total_seconds))
     # Clear controller
     send_cmd()
     p_wait(0.05)
@@ -597,21 +577,20 @@ if __name__ == "__main__":
     if not sync():
         print('Could not sync!')
         raise SystemExit(1)
-    p_wait(0.5)
+    p_wait(1.5)
 
     if not send_cmd():
         print('Packet Error!')
         raise SystemExit(1)
-    p_wait(0.5)
+    p_wait(1.5)
 
     try:
-        print('Assumptions:\n * Near wild area breeder\n * Egg ready at breeder\n * Option Send to Boxes set to Manual\n * Text speed set to Fast\n * Party full, with egg speed booster in position 1')
-        # macro_breed_for_shiny()
-        next_den_day()
-        send_cmd()
-        p_wait(1.05)
-        ser.close
-        raise SystemExit(0)
+        macro_breed_for_shiny()
+        # next_den_day()
+        # send_cmd()
+        # p_wait(1.05)
+        # ser.close
+        # raise SystemExit(0)
 
         # testbench()
         # testbench_packet_speed(1000)
