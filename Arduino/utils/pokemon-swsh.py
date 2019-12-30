@@ -9,7 +9,7 @@ import math
 
 parser = argparse.ArgumentParser('Client for sending Pokemon Sword/Shield command macros to a controller emulator')
 parser.add_argument('port', help='Serial port of connected controller emulator. On a mac, check About This Mac > System Report')
-parser.add_argument('macro', help='Macro to send to the controller emulator', default='breed_for_shiny', choices=['breed_for_shiny', 'next_den_day', 'release_box'])
+parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'next_den_day', 'release_box', 'force_sync'])
 args = parser.parse_args()
 
 STATE_OUT_OF_SYNC   = 0
@@ -489,6 +489,45 @@ Assumptions:
     for i in range(3):
         tap_cmd(BTN_A, 0.5)
 
+def macro_release_box():
+    print('''
+Assumptions:
+ * Entire current box will be released
+ * All 30 box spaces contain a pokemon
+ * Upper left pokemon selected
+ * Text Speed set to fastest
+ * Selection Mode set to Select (not Multipurpose or Multiselect)
+''')
+    for row in range(5):
+        for col in range(6):
+            # Snake through the box, alternating direction each row
+            if 0 == (row % 2):
+                # L to R row
+                col_dir = DPAD_R
+            else:
+                # R to L row
+                col_dir = DPAD_L
+            print('Releasing pokemon in row #{}, column #{}'.format(row+1, col+1))
+            # Open current pokemon's menu
+            tap_cmd(BTN_A, 0.5)
+            # What do you want to do with it? Move to Release
+            for i in range(2):
+                tap_cmd(DPAD_U, 0.1)
+            # What do you want to do with it? Press Release
+            tap_cmd(BTN_A, 1)
+            # Do you really want to release this pokemon? Move to Yes
+            tap_cmd(DPAD_U, 0.1)
+            # Do you really want to release this pokemon? Press Yes
+            tap_cmd(BTN_A, 1.5)
+            # Pokemon was released. Bye-bye pokemon!
+            tap_cmd(BTN_A, 0.5)
+            # Move to the next pokemon in this row unless this is the last column
+            if 5 != col:
+                tap_cmd(col_dir, 0.1)
+        # Done with the row, move down to the next one unless this is the last row
+        if 4 != row:
+            tap_cmd(DPAD_D, 0.1)
+
 def teleport_to_current_location():
     print("teleport_to_current_location")
     time.sleep(0.5)
@@ -598,6 +637,7 @@ if __name__ == "__main__":
         # This is our macro argument to function execution not-switch
         arg_macro_functions = {
             'breed_for_shiny': macro_breed_for_shiny,
+            'force_sync': force_sync,
             'next_den_day': macro_next_den_day,
             'release_box': macro_release_box
         }
