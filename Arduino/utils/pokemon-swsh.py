@@ -434,38 +434,46 @@ def macro_loto_id():
 Assumptions:
  * Nintendo Online VS ranked battle glitch active
  * Standing in front of Rotom PC
+ * Initializes year to 2000 (Switch only allows years 2000-2060)
+ * If you can't play or don't win, the box will open. Don't worry about it.
 ''')
     # Flush controller
     send_cmd()
     p_wait(0.5)
 
-    # Open PC
-    tap_cmd(BTN_A, 0.5)
+    # Roll year back to 2000
+    skip_day(False)
 
-    # What can I help you with? Pass
-    tap_cmd(BTN_A, 0.5)
-    # What can I help you with? Move to Try Loto-ID
-    tap_cmd(DPAD_D, 0.1)
-    # What can I help you with? Select Try Loto-ID
-    tap_cmd(BTN_A, 1.0)
-    # I've now connected to the servers at the Loto-ID Center! Pass
-    tap_cmd(BTN_A, 1.0)
-    # We'll draw a number... Pass
-    tap_cmd(BTN_A, 0.5)
-    # ...win fabulous prizzzes! Pass
-    tap_cmd(BTN_A, 1.0)
-    # Ready to save your progress and try your luck? Select Yes
-    tap_cmd(BTN_A, 1.0)
+    # Check Loto-ID every year 2000-2060
+    for yr in range(2000, 2061):
+        print('Play Loto-ID {}'.format(yr))
+        # Open PC
+        tap_cmd(BTN_A, 0.5)
 
-    # Mash the B button to get through the Loto-ID and back out of the PC
-    for sec in range(30):
-        send_cmd()
-        p_wait(0.4)
-        send_cmd(BTN_B)
-        p_wait(0.1)
+        # What can I help you with? Pass
+        tap_cmd(BTN_A, 0.5)
+        # What can I help you with? Move to Try Loto-ID
+        tap_cmd(DPAD_D, 0.1)
+        # What can I help you with? Select Try Loto-ID
+        tap_cmd(BTN_A, 1.0)
+        # I've now connected to the servers at the Loto-ID Center! Pass
+        tap_cmd(BTN_A, 1.0)
+        # We'll draw a number... Pass
+        tap_cmd(BTN_A, 0.5)
+        # ...win fabulous prizzzes! Pass
+        tap_cmd(BTN_A, 1.0)
+        # Ready to save your progress and try your luck? Select Yes
+        tap_cmd(BTN_A, 1.0)
 
-    # Skip the current day
-    skip_day()
+        # Mash the B button to get through the Loto-ID and back out of the PC
+        for sec in range(30):
+            send_cmd()
+            p_wait(0.4)
+            send_cmd(BTN_B)
+            p_wait(0.1)
+
+        # Skip the current day
+        skip_day()
 
 def macro_next_den_day():
     print('''
