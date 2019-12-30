@@ -7,8 +7,9 @@ import sys
 import time
 import math
 
-parser = argparse.ArgumentParser('Client for sending controller commands to a controller emulator')
-parser.add_argument('port')
+parser = argparse.ArgumentParser('Client for sending Pokemon Sword/Shield command macros to a controller emulator')
+parser.add_argument('port', help='Serial port of connected controller emulator. On a mac, check About This Mac > System Report')
+parser.add_argument('macro', help='Macro to send to the controller emulator', default='breed_for_shiny', choices=['breed_for_shiny', 'next_den_day', 'release_box'])
 args = parser.parse_args()
 
 STATE_OUT_OF_SYNC   = 0
@@ -405,7 +406,14 @@ def sync():
     return inSync
 # ------------------------ Pokemon Sword & Shield -------------------------
 def macro_breed_for_shiny ():
-    print('Assumptions:\n * Near wild area breeder\n * Egg ready at breeder\n * Option Send to Boxes set to Manual\n * Text speed set to Fast\n * Party full, with egg speed booster in position 1')
+    print('''
+Assumptions:
+ * Near wild area breeder
+ * Egg ready at breeder
+ * Option Send to Boxes set to Manual
+ * Text speed set to Fast
+ * Party full, with egg speed booster in position 1
+''')
     macro_counter = 0
     box_spaces = 192
     print ("in macro_breed_for_shiny")
@@ -421,6 +429,65 @@ def macro_breed_for_shiny ():
         macro_counter = macro_counter + 1
     send_cmd() ; p_wait(0.1)
 
+def macro_next_den_day():
+    print('''
+Assumptions:
+ * Initial den screen open with "Invite Others" button selected
+ * Den spawned using Wishing Stone
+''')
+    # Flush controller
+    send_cmd()
+    p_wait(0.5)
+
+    # Invite Others
+    tap_cmd(BTN_A, 4)
+
+    # Home screen
+    tap_cmd(BTN_HOME, 1)
+    # Bottom row buttons
+    tap_cmd(DPAD_D, 0.2)
+    # Over to System Settings
+    for i in range(4):
+        tap_cmd(DPAD_R, 0.2)
+    # Open Sytem Settings
+    tap_cmd(BTN_A, 0.5)
+    # To Sytem Settings > System
+    for i in range(14):
+        tap_cmd(DPAD_D, 0.3)
+    # Into Sytem Settings > System
+    tap_cmd(BTN_A, 0.5)
+    # To System > Date and Time
+    for i in range(4):
+        tap_cmd(DPAD_D, 0.2)
+    # Into System > Date and Time
+    tap_cmd(BTN_A, 0.5)
+    # To System > Date and Time > Date and Time
+    for i in range(2):
+        tap_cmd(DPAD_D, 0.2)
+    # Into System > Date and Time > Date and Time control
+    tap_cmd(BTN_A, 1.0)
+    # To Year control
+    for i in range(2):
+        tap_cmd(DPAD_R, 0.2)
+    # Increase Year (caps at 2060, do something to reset by then)
+    tap_cmd(DPAD_U, 0.2)
+    # Accept new Year
+    for i in range(5):
+        tap_cmd(BTN_A, 0.2)
+    p_wait(1.0)
+    # Home screen
+    tap_cmd(BTN_HOME, 1)
+    # Re-launch Pokemon
+    tap_cmd(BTN_A, 1.5)
+
+    # Quit Invite Others
+    tap_cmd(BTN_B, 2)
+    # Yes
+    tap_cmd(BTN_A, 4)
+
+    # Open den, collecting watts
+    for i in range(3):
+        tap_cmd(BTN_A, 0.5)
 
 def teleport_to_current_location():
     print("teleport_to_current_location")
@@ -507,64 +574,6 @@ def mashA (num):
         send_cmd(BTN_A) ; time.sleep(0.1) ;  send_cmd();  time.sleep(0.5)
     return True
 
-def next_den_day():
-    # Flush controller
-    send_cmd()
-    p_wait(0.5)
-
-    # MUST BE IN DEN TO START
-
-    # Invite Others
-    tap_cmd(BTN_A, 4)
-
-    # Home screen
-    tap_cmd(BTN_HOME, 1)
-    # Bottom row buttons
-    tap_cmd(DPAD_D, 0.2)
-    # Over to System Settings
-    for i in range(4):
-        tap_cmd(DPAD_R, 0.2)
-    # Open Sytem Settings
-    tap_cmd(BTN_A, 0.5)
-    # To Sytem Settings > System
-    for i in range(14):
-        tap_cmd(DPAD_D, 0.3)
-    # Into Sytem Settings > System
-    tap_cmd(BTN_A, 0.5)
-    # To System > Date and Time
-    for i in range(4):
-        tap_cmd(DPAD_D, 0.2)
-    # Into System > Date and Time
-    tap_cmd(BTN_A, 0.5)
-    # To System > Date and Time > Date and Time
-    for i in range(2):
-        tap_cmd(DPAD_D, 0.2)
-    # Into System > Date and Time > Date and Time control
-    tap_cmd(BTN_A, 1.0)
-    # To Year control
-    for i in range(2):
-        tap_cmd(DPAD_R, 0.2)
-    # Increase Year (caps at 2060, do something to reset by then)
-    tap_cmd(DPAD_U, 0.2)
-    # Accept new Year
-    for i in range(5):
-        tap_cmd(BTN_A, 0.2)
-    p_wait(1.0)
-    # Home screen
-    tap_cmd(BTN_HOME, 1)
-    # Re-launch Pokemon
-    tap_cmd(BTN_A, 1.5)
-
-    # Quit Invite Others
-    tap_cmd(BTN_B, 2)
-    # Yes
-    tap_cmd(BTN_A, 4)
-
-    # Open den, collecting watts
-    for i in range(3):
-        tap_cmd(BTN_A, 0.5)
-
-
 # -------------------------------------------------------------------------
 if __name__ == "__main__":
     ser = serial.Serial(port=args.port, baudrate=19200,timeout=1)
@@ -585,17 +594,24 @@ if __name__ == "__main__":
     p_wait(1.5)
 
     try:
-        macro_breed_for_shiny()
-        # next_den_day()
-        # send_cmd()
-        # p_wait(1.05)
-        # ser.close
-        # raise SystemExit(0)
+        # Python doesn't have a switch/case feature but does allow functions as dictionary values
+        # This is our macro argument to function execution not-switch
+        arg_macro_functions = {
+            'breed_for_shiny': macro_breed_for_shiny,
+            'next_den_day': macro_next_den_day,
+            'release_box': macro_release_box
+        }
+        arg_macro_function = arg_macro_functions.get(args.macro)
+        arg_macro_function()
 
         # testbench()
         # testbench_packet_speed(1000)
 
     except KeyboardInterrupt:
+        pass
+
+    finally:
+        # Tidy up after ourselves
         send_cmd()
         p_wait(0.05)
         ser.close
