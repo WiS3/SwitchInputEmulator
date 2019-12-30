@@ -9,7 +9,7 @@ import math
 
 parser = argparse.ArgumentParser('Client for sending Pokemon Sword/Shield command macros to a controller emulator')
 parser.add_argument('port', help='Serial port of connected controller emulator. On a mac, check About This Mac > System Report')
-parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'next_den_day', 'release_box', 'skip_day', 'force_sync'])
+parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'loto_id', 'next_den_day', 'release_box', 'skip_day', 'force_sync'])
 args = parser.parse_args()
 
 STATE_OUT_OF_SYNC   = 0
@@ -429,6 +429,44 @@ Assumptions:
         macro_counter = macro_counter + 1
     send_cmd() ; p_wait(0.1)
 
+def macro_loto_id():
+    print('''
+Assumptions:
+ * Nintendo Online VS ranked battle glitch active
+ * Standing in front of Rotom PC
+''')
+    # Flush controller
+    send_cmd()
+    p_wait(0.5)
+
+    # Open PC
+    tap_cmd(BTN_A, 0.5)
+
+    # What can I help you with? Pass
+    tap_cmd(BTN_A, 0.5)
+    # What can I help you with? Move to Try Loto-ID
+    tap_cmd(DPAD_D, 0.1)
+    # What can I help you with? Select Try Loto-ID
+    tap_cmd(BTN_A, 1.0)
+    # I've now connected to the servers at the Loto-ID Center! Pass
+    tap_cmd(BTN_A, 1.0)
+    # We'll draw a number... Pass
+    tap_cmd(BTN_A, 0.5)
+    # ...win fabulous prizzzes! Pass
+    tap_cmd(BTN_A, 1.0)
+    # Ready to save your progress and try your luck? Select Yes
+    tap_cmd(BTN_A, 1.0)
+
+    # Mash the B button to get through the Loto-ID and back out of the PC
+    for sec in range(30):
+        send_cmd()
+        p_wait(0.4)
+        send_cmd(BTN_B)
+        p_wait(0.1)
+
+    # Skip the current day
+    skip_day()
+
 def macro_next_den_day():
     print('''
 Assumptions:
@@ -659,6 +697,7 @@ if __name__ == "__main__":
         arg_macro_functions = {
             'breed_for_shiny': macro_breed_for_shiny,
             'force_sync': force_sync,
+            'loto_id': macro_loto_id,
             'next_den_day': macro_next_den_day,
             'release_box': macro_release_box,
             'skip_day': macro_skip_day
