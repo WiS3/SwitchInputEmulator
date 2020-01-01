@@ -9,7 +9,7 @@ import math
 
 parser = argparse.ArgumentParser('Client for sending Pokemon Sword/Shield command macros to a controller emulator')
 parser.add_argument('port', help='Serial port of connected controller emulator. On a mac, check About This Mac > System Report')
-parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['farm_mausoleum', 'force_sync', 'mash_a'])
+parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['farm_fort_alldead', 'farm_mausoleum', 'force_sync', 'mash_a'])
 parser.add_argument('--iterations', help='Number of iterations of macro to execute. Default varies by macro. Does not apply to all macros.', default=0, type=int)
 args = parser.parse_args()
 
@@ -465,6 +465,52 @@ Assumptions:
     send_cmd() ; p_wait(0.1)
     return True
 
+def macro_farm_fort_alldead ():
+    print('''
+Assumptions:
+ * Have Doc Alice as companion
+ * In Fort Alldead, in front of trench
+ * Can clear the skeletons with Great Northern Blizzard
+ * Defaults to one fight. Override with --iterations=N
+''')
+    fights = 1
+    if args.iterations > 0:
+        fights = args.iterations
+    print ("in macro_farm_fort_alldead")
+    for i in range(fights):
+        print("Loop #{} of {}".format(i + 1, fights))
+        # Walk into the trench
+        send_cmd(LSTICK_U)
+        p_wait(1)
+        send_cmd()
+        p_wait(0.05)
+
+        # Select Hop in!
+        tap_cmd(BTN_A, 5)
+        #
+        # First round, protagonist!
+        #
+        # Move right to Beanshield
+        move_cursor_l(3, 0)
+        # Activate Beanshield
+        tap_cmd(BTN_A, 3)
+        # Move right to Use the Ol' Bean
+        move_cursor_l(1, 0)
+        # Activate Use the Ol' Bean
+        tap_cmd(BTN_A, 3)
+        # Move right to Great Northern Blizzard
+        move_cursor_l(2, 0)
+        # Activate Great Northern Blizzard
+        tap_cmd(BTN_A, 2)
+
+        #
+        # Spam A to complete fight
+        #
+        mash_btn(BTN_A, 25)
+
+    send_cmd() ; p_wait(0.1)
+    return True
+
 def macro_mash_a ():
     print('''
 Assumptions:
@@ -552,6 +598,7 @@ if __name__ == "__main__":
         # Python doesn't have a switch/case feature but does allow functions as dictionary values
         # This is our macro argument to function execution not-switch
         arg_macro_functions = {
+            'farm_fort_alldead': macro_farm_fort_alldead,
             'farm_mausoleum': macro_farm_mausoleum,
             'mash_a': macro_mash_a,
             'force_sync': force_sync,
