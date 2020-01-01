@@ -10,6 +10,7 @@ import math
 parser = argparse.ArgumentParser('Client for sending Pokemon Sword/Shield command macros to a controller emulator')
 parser.add_argument('port', help='Serial port of connected controller emulator. On a mac, check About This Mac > System Report')
 parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'loto_id', 'next_den_day', 'release_box', 'skip_day', 'force_sync'])
+parser.add_argument('--iterations', help='Number of iterations of macro to execute. Default varies by macro. Does not apply to all macros.', default=0, type=int)
 args = parser.parse_args()
 
 STATE_OUT_OF_SYNC   = 0
@@ -413,13 +414,16 @@ Assumptions:
  * Option Send to Boxes set to Manual
  * Text speed set to Fast
  * Party full, with egg speed booster in position 1
+ * Defaults to filling 1 box (30 eggs). Override with --iterations=N
 ''')
     macro_counter = 0
-    box_spaces = 192
+    box_spaces = 30
+    if args.iterations > 0:
+        box_spaces = args.iterations
     print ("in macro_breed_for_shiny")
     for i in range(box_spaces):
         time.sleep(.4)
-        print("Loop #{}".format(macro_counter))
+        print("Loop #{} of {}".format(macro_counter + 1, box_spaces))
         teleport_to_current_location()
         gotoBreader()
         getEggFromBreader()
@@ -436,6 +440,7 @@ Assumptions:
  * Standing in front of Rotom PC
  * Initializes year to 2000 (Switch only allows years 2000-2060)
  * If you can't play or don't win, the box will open. Don't worry about it.
+ * Ignores --iterations
 ''')
     # Flush controller
     send_cmd()
@@ -480,25 +485,33 @@ def macro_next_den_day():
 Assumptions:
  * Initial den screen open with "Invite Others" button selected
  * Den spawned using Wishing Stone
+ * Defaults to 1 skipped den day. Override with --iterations=N (e.g. shiny den farming loops with --iterations=3)
 ''')
+    skips = 1
+    if args.iterations > 0:
+        skips = args.iterations
+
     # Flush controller
     send_cmd()
     p_wait(0.5)
 
-    # Invite Others
-    tap_cmd(BTN_A, 4)
+    for i in range(skips):
+        print("Skip #{} of {}".format(i + 1, skips))
 
-    # Skip the current day
-    skip_day()
+        # Invite Others
+        tap_cmd(BTN_A, 4)
 
-    # Quit Invite Others
-    tap_cmd(BTN_B, 2)
-    # Yes
-    tap_cmd(BTN_A, 4)
+        # Skip the current day
+        skip_day()
 
-    # Open den, collecting watts
-    for i in range(3):
-        tap_cmd(BTN_A, 0.5)
+        # Quit Invite Others
+        tap_cmd(BTN_B, 1)
+        # Yes
+        tap_cmd(BTN_A, 4.5)
+
+        # Open den, collecting watts
+        for i in range(3):
+            tap_cmd(BTN_A, 0.5)
 
 def macro_release_box():
     print('''
@@ -508,6 +521,7 @@ Assumptions:
  * Upper left pokemon selected
  * Text Speed set to fastest
  * Selection Mode set to Select (not Multipurpose or Multiselect)
+ * Ignores --iterations
 ''')
     for row in range(5):
         for col in range(6):
@@ -543,13 +557,21 @@ def macro_skip_day():
     print('''
 Assumptions:
  * Nintendo Online VS ranked battle glitch active
+ * Defaults to 1 skipped den day. Override with --iterations=N
 ''')
+    skips = 1
+    if args.iterations > 0:
+        skips = args.iterations
+
     # Flush controller
     send_cmd()
     p_wait(0.5)
 
-    # Skip the current day
-    skip_day()
+    for i in range(skips):
+        print("Skip #{} of {}".format(i + 1, skips))
+
+        # Skip the current day
+        skip_day()
 
 def teleport_to_current_location():
     print("teleport_to_current_location")
@@ -642,10 +664,10 @@ def skip_day(forward=True):
     # Home screen
     tap_cmd(BTN_HOME, 1)
     # Bottom row buttons
-    tap_cmd(DPAD_D, 0.2)
+    tap_cmd(DPAD_D, 0.1)
     # Over to System Settings
     for i in range(4):
-        tap_cmd(DPAD_R, 0.2)
+        tap_cmd(DPAD_R, 0.1)
     # Open Sytem Settings
     tap_cmd(BTN_A, 0.5)
     # To Sytem Settings > System
