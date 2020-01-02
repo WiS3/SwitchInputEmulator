@@ -588,16 +588,16 @@ def teleport_to_current_location():
     print("teleport_to_current_location")
     time.sleep(0.5)
     #Bring up menu
-    send_cmd(BTN_X) ; time.sleep(0.1) ;  send_cmd(); time.sleep(0.8)
+    send_cmd(BTN_X) ; time.sleep(0.1) ;  send_cmd(); time.sleep(0.5)
     #Select bottom left
     send_cmd(LSTICK_L); time.sleep(0.8); send_cmd(LSTICK_CENTER) ; time.sleep(0.1) 
     send_cmd(LSTICK_D); time.sleep(0.8); send_cmd(LSTICK_CENTER) ; time.sleep(0.1) 
     send_cmd(BTN_A); time.sleep(0.1) ;  send_cmd();
     #wait for map to load and select location
-    time.sleep(5)
+    time.sleep(4)
     send_cmd(BTN_A) ; time.sleep(0.1) ;  send_cmd(); time.sleep(1)
     send_cmd(BTN_A) ; time.sleep(0.1) ;  send_cmd(); 
-    time.sleep(5)
+    time.sleep(4)
     return True
 
 def gotoBreader():
@@ -612,7 +612,7 @@ def gotoEmptyArea():
     print("gotoEmptyArea")
     send_cmd(RSTICK_R) ; time.sleep(.25) ;  send_cmd(RSTICK_CENTER) ; time.sleep(0.1)  
     send_cmd(LSTICK_U) ; time.sleep(1) ;  send_cmd(LSTICK_CENTER) ; time.sleep(0.1)  
-    send_cmd(LSTICK_R) ; time.sleep(1.5) ;  send_cmd(LSTICK_CENTER) ; time.sleep(0.1)  
+    send_cmd(LSTICK_R) ; time.sleep(1.0) ;  send_cmd(LSTICK_CENTER) ; time.sleep(0.1)  
     send_cmd(BTN_A) ; time.sleep(0.1) ;  send_cmd() ; time.sleep(0.1)  
     return True
 
