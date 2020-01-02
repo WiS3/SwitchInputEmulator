@@ -481,7 +481,7 @@ Assumptions:
         print("Loop #{} of {}".format(i + 1, fights))
         # Walk into the trench
         send_cmd(LSTICK_U)
-        p_wait(1)
+        p_wait(2)
         send_cmd()
         p_wait(0.05)
 
@@ -507,6 +507,13 @@ Assumptions:
         # Spam A to complete fight
         #
         mash_btn(BTN_A, 25)
+
+        # Walk down a bit
+        send_cmd(LSTICK_D)
+        p_wait(0.5)
+        send_cmd()
+        p_wait(0.05)
+
 
     send_cmd() ; p_wait(0.1)
     return True
