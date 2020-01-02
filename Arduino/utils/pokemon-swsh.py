@@ -9,7 +9,7 @@ import math
 
 parser = argparse.ArgumentParser('Client for sending Pokemon Sword/Shield command macros to a controller emulator')
 parser.add_argument('port', help='Serial port of connected controller emulator. On a mac, check About This Mac > System Report')
-parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'loto_id', 'next_den_day', 'release_box', 'skip_day', 'force_sync'])
+parser.add_argument('macro', help='Macro to send to the controller emulator', default='force_sync', choices=['breed_for_shiny', 'force_sync', 'loto_id', 'mash_a', 'next_den_day', 'release_box', 'skip_day'])
 parser.add_argument('--iterations', help='Number of iterations of macro to execute. Default varies by macro. Does not apply to all macros.', default=0, type=int)
 args = parser.parse_args()
 
@@ -480,6 +480,17 @@ Assumptions:
         # Skip the current day
         skip_day()
 
+def macro_mash_a ():
+    print('''
+Assumptions:
+ * Defaults to one second at a rate of 2 taps per second. Override with --iterations=N
+''')
+    seconds = 1
+    if args.iterations > 0:
+        seconds = args.iterations
+    print ("in macro_mash_a")
+    mash_btn(BTN_A, seconds)
+
 def macro_next_den_day():
     print('''
 Assumptions:
@@ -652,6 +663,59 @@ def bike_loop_mashing_a(seconds):
 
     return True
 
+def move_cursor_l(delta_x, delta_y):
+    print("Move left stick cursor by {}, {}".format(delta_x, delta_y))
+    # Default x to move positively, support negative movement
+    x_btn = LSTICK_R
+    if delta_x < 0:
+        x_btn = LSTICK_L
+        delta_x = abs(delta_x)
+
+    # Default y to move positively, support negative movement
+    y_btn = LSTICK_U
+    if delta_y < 0:
+        y_btn = LSTICK_D
+        delta_y = abs(delta_y)
+
+    # Move x
+    for i in range(delta_x):
+        tap_cmd(x_btn, 0.1)
+
+    # Move y
+    for i in range(delta_y):
+        tap_cmd(y_btn, 0.1)
+
+def move_cursor_r(delta_x, delta_y):
+    print("Move right stick cursor by {}, {}".format(delta_x, delta_y))
+    # Default x to move positively, support negative movement
+    x_btn = RSTICK_R
+    if delta_x < 0:
+        x_btn = RSTICK_L
+        delta_x = abs(delta_x)
+
+    # Default y to move positively, support negative movement
+    y_btn = RSTICK_U
+    if delta_y < 0:
+        y_btn = RSTICK_D
+        delta_y = abs(delta_y)
+
+    # Move x
+    for i in range(delta_x):
+        tap_cmd(x_btn, 0.1)
+
+    # Move y
+    for i in range(delta_y):
+        tap_cmd(y_btn, 0.1)
+
+def mash_btn (btn, seconds):
+    print ("Mashing button for {} seconds".format(seconds))
+    for i in range(seconds * 2):
+        send_cmd(btn)
+        p_wait(0.1)
+        send_cmd()
+        p_wait(0.4)
+    return True
+
 def mashA (num):
     print ("mashing A")
     for i in range(num):
@@ -736,6 +800,7 @@ if __name__ == "__main__":
             'breed_for_shiny': macro_breed_for_shiny,
             'force_sync': force_sync,
             'loto_id': macro_loto_id,
+            'mash_a': macro_mash_a,
             'next_den_day': macro_next_den_day,
             'release_box': macro_release_box,
             'skip_day': macro_skip_day
